@@ -32,7 +32,9 @@ if ! [ -x "$(command -v sshpass)" ]; then
             echo "\t⚠ Homebrew is not installed. Installing..."
             /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
         fi
-        brew install sshpass
+        curl -L https://raw.githubusercontent.com/kadwanev/bigboybrew/master/Library/Formula/sshpass.rb > sshpass.rb
+        brew install sshpass.rb
+        rm sshpass.rb
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         sudo apt-get install sshpass
     else
