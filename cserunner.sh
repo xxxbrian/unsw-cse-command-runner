@@ -13,74 +13,63 @@ echo "
 if [ $# -gt 0 ]
     then
         COMMAND=$*
-        echo "Command: $COMMAND"
+        echo "🚀 Command: $COMMAND"
     else
-        echo -n "Enter command: "
+        echo -n "🚀 Enter command: "
         read COMMAND
 fi
 
 # ask for username
-echo -n "Enter zid: "
+echo -n "🙋 Enter zid: "
 read USERNAME
 # ask for password
-echo -n "Enter password: "
+echo -n "🔒 Enter password: "
 read -s PASSWORD
 
 SSH_HOST="cse.unsw.edu.au"
 WORKING_DIRECTORY="~/cserunner/tmp"
 
 echo
-echo "####Checking local environment####"
-# check if expect is installed
-if ! [ -x "$(command -v expect)" ]; then
-    echo "Expect command is not installed. Installing..."
+echo "🔥 Check Dependencies: "
+echo -ne "\t🔎 Checking Local..."
+# check if sshpass is installed
+if ! [ -x "$(command -v sshpass)" ]; then
+    echo -e "\r\t🟠 Installing sshpass..."
     if [ "$(uname)" == "Darwin" ]; then
         # check if brew is installed
         if ! [ -x "$(command -v brew)" ]; then
-            echo "Homebrew is not installed. Installing..."
+            echo "\t⚠ Homebrew is not installed. Installing..."
             /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
         fi
-        brew install expect
+        brew install sshpass
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-        sudo apt-get install expect
+        sudo apt-get install sshpass
     else
-        echo "Unsupported OS"
+        echo -e "\r\t⛔ Unsupported OS ($(uname -s))"
         exit 1
     fi
+    echo -e "\r\t✅ Sshpass Install Success"
 else
-    echo "Awesome! Expect command is installed."
+    sleep 2
+    echo -e "\r\t✅ Local Dependent Environment Checked."
 fi
 
+echo -ne "\t🔎 Checking Remote..."
+sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no $USERNAME@$SSH_HOST "test -d $WORKING_DIRECTORY || mkdir -p $WORKING_DIRECTORY"
+sleep 2
+echo -e "\r\t✅ Remote Dependent Environment Checked."
+
+sleep 1
+echo "⚡ Synchronization: "
+sleep 1
+echo -e "\t🔎 Syncing Files to Remote..."
+sshpass -p $PASSWORD scp $(pwd)/* $USERNAME@$SSH_HOST:$WORKING_DIRECTORY
+for file in $(ls); do
+    echo -e "\t✅ $file"
+    sleep 0.5
+done
 
 echo
-echo "#######Checking remote host#######"
-expect << EOF
-spawn ssh "$USERNAME@$SSH_HOST" "test -d $WORKING_DIRECTORY && echo All good! || mkdir -p $WORKING_DIRECTORY"
-expect {
-"yes/no" {send "yes\r"; exp_continue}
-"password" {send "$PASSWORD\r"}
-}
-expect eof
-EOF
-
+echo "🚀🚀🚀🚀🚀🚀🚀 Executing Command 🚀🚀🚀🚀🚀🚀🚀"
 echo
-echo "##########Copying files##########"
-expect << EOF
-spawn bash -c "scp $(pwd)/* $USERNAME@$SSH_HOST:$WORKING_DIRECTORY"
-expect {
-"yes/no" {send "yes\r"; exp_continue}
-"password" {send "$PASSWORD\r"}
-}
-expect eof
-EOF
-
-echo
-echo "########Executing command########"
-expect << EOF
-spawn ssh "$USERNAME@$SSH_HOST" "cd $WORKING_DIRECTORY && $COMMAND"
-expect {
-"yes/no" {send "yes\r"; exp_continue}
-"password" {send "$PASSWORD\r"}
-}
-expect eof
-EOF
+sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no $USERNAME@$SSH_HOST "cd $WORKING_DIRECTORY && $COMMAND"
