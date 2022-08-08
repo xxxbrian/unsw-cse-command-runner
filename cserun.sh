@@ -1,5 +1,12 @@
 #!/bin/bash
 
+exit_with_error() {
+    if [ $? -ne 0 ]; then
+        echo -ne "\n🚫Connection to the server failed.\n"
+        exit 1
+    fi
+}
+
 echo "
   ____ ____  _____   ____                              
  / ___/ ___|| ____| |  _ \ _   _ _ __  _ __   ___ _ __ 
@@ -48,7 +55,8 @@ else
 fi
 
 echo -ne "\t🔎 Checking Remote..."
-sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no $USERNAME@$SSH_HOST "test -d $WORKING_DIRECTORY || mkdir -p $WORKING_DIRECTORY"
+sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no $USERNAME@$SSH_HOST "test -d $WORKING_DIRECTORY || mkdir -p $WORKING_DIRECTORY" > /dev/null 2>&1
+exit_with_error
 sleep 2
 echo -e "\r\t✅ Remote Dependent Environment Checked."
 
@@ -56,7 +64,8 @@ sleep 1
 echo "⚡ Synchronization: "
 sleep 1
 echo -e "\t🔎 Syncing Files to Remote..."
-sshpass -p $PASSWORD scp $(pwd)/* $USERNAME@$SSH_HOST:$WORKING_DIRECTORY
+sshpass -p $PASSWORD scp -r $(pwd)/* $USERNAME@$SSH_HOST:$WORKING_DIRECTORY > /dev/null 2>&1
+exit_with_error
 for file in $(ls); do
     echo -e "\t✅ $file"
     sleep 0.5
