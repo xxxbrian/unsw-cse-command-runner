@@ -68,7 +68,7 @@ sshpass -p $PASSWORD scp -r $(pwd)/* $USERNAME@$SSH_HOST:$WORKING_DIRECTORY > /d
 exit_with_error
 for file in $(ls); do
     echo -e "\t✅ $file"
-    sleep 0.5
+    sleep 0.2
 done
 
 echo
