@@ -33,8 +33,9 @@ read USERNAME
 echo -n "🔒 Enter password: "
 read -s PASSWORD
 
+timestamp=$((`date '+%s'`*1000+`date '+%N'`/1000000))
 SSH_HOST="cse.unsw.edu.au"
-WORKING_DIRECTORY="~/cserunner/tmp"
+WORKING_DIRECTORY="~/cserunner/sync/$timestamp"
 
 echo
 echo "🔥 Check Dependencies: "
@@ -73,7 +74,8 @@ sleep 1
 echo "⚡ Synchronization: "
 sleep 1
 echo -e "\t🔎 Syncing Files to Remote..."
-sshpass -p $PASSWORD scp -r $(pwd)/* $USERNAME@$SSH_HOST:$WORKING_DIRECTORY > /dev/null 2>&1
+#sshpass -p $PASSWORD scp -r $(pwd)/* $USERNAME@$SSH_HOST:$WORKING_DIRECTORY > /dev/null 2>&1
+sshpass -p $PASSWORD rsync -aq --exclude='.git' --exclude='venv' $(pwd)/* $USERNAME@$SSH_HOST:$WORKING_DIRECTORY > /dev/null 2>&1
 exit_with_error
 for file in $(ls); do
     echo -e "\t✅ $file"
